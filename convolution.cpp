@@ -15,14 +15,44 @@ module assuming perfect conditions. (a.k.a how many cycles would you estimate it
 include the factors that you would assume and expect effect the performance your core.
  
  */
+/*
+[][][][][][][][][][][]
+[][][][][][][][][][][]
+[][][][][][][][][][][]
+[][][][][][][][][][][]
+[][][][][][][][][][][]
+[][][][][][-][-][-][-][-][-]
+[][][][][][-][-][-][-][-][-]
+[][][][][][-][-][-][-][-][-]
+[][][][][][-][-][-][-][-][-]
+[][][][][][-][-][-][-][-][-]
+[][][][][][-][-][-][-][-][-]
+*/
+
+void matrixAdd(int rgb[][224][224], int output[][224]) {
+	
+	#pragma HLS INTERFACE s_axilite port=rgb bundle=main
+	#pragma HLS INTERFACE s_axilite port=output bundle=main
+	#pragma HLS INTERFACE s_axilite port=return bundle=main
+	
+	for (int j = 0; j < 224; ++j) {
+		for (int k = 0; k < 224; ++k) {
+			output[j][k] = rgb[0][j][k] + rgb[1][j][k] + rgb[2][j][k]; 
+		}
+	}
+}
+
 
 void convolution(
-		uint8_t rgb[][224][224], 
-		uint8_t kernel[][11][11],
-		uint8_t conv[][224][224],
+		int rgb[][224][224], 
+		int kernel[][11][11],
+		int conv[][224][224],
 		int i) {
 
     #pragma HLS INTERFACE s_axilite port=rgb bundle=main
+	#pragma HLS INTERFACE s_axilite port=kernel bundle=main
+	#pragma HLS INTERFACE s_axilite port=conv bundle=main
+	#pragma HLS INTERFACE s_axilite port=k bundle=main
 	#pragma HLS INTERFACE s_axilite port=return bundle=main
 
 	//for j and k of conv array in dimension i
@@ -39,7 +69,7 @@ void convolution(
 	}	
 }
 
-uint8_t[224][224] driver(uint8_t rgb[3][224][224], uint8_t kernel[3][11][11]){
+void driver(int rgb[3][224][224], int kernel[3][11][11], int output[224][224]){
 	/*
 	 * Where rgb and kernel are arrays of 2D arrays
 	 */
@@ -48,22 +78,18 @@ uint8_t[224][224] driver(uint8_t rgb[3][224][224], uint8_t kernel[3][11][11]){
 	#pragma HLS INTERFACE s_axilite port=return bundle=main
 	
 	//pointers to 2D arrays
-	//uint8_t (*rgbP)[224][224] = rgb;
-	//uint8_t (*kernelP)[11][11] = kernel;
+	//int (*rgbP)[224][224] = rgb;
+	//int (*kernelP)[11][11] = kernel;
 	
 	//array for output of convolution
-	uint8_t conv[3][224][224];
+	int conv[3][224][224];
 		
 	for (int i = 0; i < 3; ++i){
-		//could be unrolled, because each call has seperate memory and no dependancies
+		#pragma HLS unroll
 		convolution(rgb, kernel, conv, i);
 	}
+		
+	matrixAdd(conv, output);
 	
-	/*
-	 * 
-	 * stuff
-	 * 
-	 */
-	
-	return a nice one;
+	return;
 }
