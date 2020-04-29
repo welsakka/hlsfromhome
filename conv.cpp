@@ -68,6 +68,41 @@ void convolution (
 	}
 }
 
+void conv_2d(int *input, int *kernel, int *output){
+	#pragma HLS INTERFACE axis port=output
+	#pragma HLS INTERFACE axis port=input
+	#pragma HLS INTERFACE axis port=kernel
+
+	int linebuffer[503];
+	int kernel_hold[9];
+
+	for (int m = 0; m<503; m++){
+	  linebuffer[m] = *input++;
+	}
+
+	for (int m = 0; m<9; m++){
+	  kernel_hold[m] = *kernel++;
+	}
+
+	for (int i = 0; i<250*250; ++i){
+	  tmp += linebuffer[0] * kernel[0];
+	  tmp += linebuffer[1] * kernel[1];
+	  tmp += linebuffer[2] * kernel[2];
+	  tmp += linebuffer[250] * kernel[3];
+	  tmp += linebuffer[251] * kernel[4];
+	  tmp += linebuffer[252] * kernel[5];
+	  tmp += linebuffer[500] * kernel[6];
+	  tmp += linebuffer[501] * kernel[7];
+	  tmp += linebuffer[502] * kernel[8];
+      
+      for (int m = 0; m<502; m++){
+        linebuffer[m] = linebuffer[m+1];
+      }
+      linebuffer[502] = *input++;
+      output[i] = tmp;
+	} 
+}
+
 /*
  * Code before April 23 class
  *
